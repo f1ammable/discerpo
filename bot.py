@@ -1,9 +1,8 @@
-from turtle import down
 import discord
 import capstone
 from discord.ext import commands
 import os
-import requests
+#import requests - replace with aiohttp to asynchronously download files
 
 # Own custom module imports
 #import disasm
