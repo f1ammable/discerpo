@@ -204,4 +204,10 @@ pip-selfcheck.json
 #venv
 bot-env/*
 
+#Bot token
+botToken.py
+
+#Some osx shit
+.DS_Store
+
 # End of https://www.toptal.com/developers/gitignore/api/venv,python,visualstudiocode
