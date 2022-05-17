@@ -1,41 +1,37 @@
+from turtle import down
 import discord
 import capstone
 from discord.ext import commands
-#import disasm
-from COOLBOT import botToken
 import os
 import requests
 
+# Own custom module imports
+#import disasm
+from botToken import token # Not stealing my token
+
 bot = commands.Bot(command_prefix="$")
-wd = os.getcwd()
-
-def check(author):
-    def inner(msg):
-        if msg.author != author:
-            return False    
-        else:
-            return True
+os.chdir('files')
     
-
 @bot.event
 async def on_ready():
     print("Logged in")
 
 @bot.command()
-async def fooTest(ctx, arg):
-    await ctx.send(arg)
+async def disassemble(ctx, file): #provide function name potentially to only disassemble by function 
+    try:
+        r = requests.get(file, allow_redirects=True)
+        open(f"{ctx.author.id}", 'wb').write(r.content)
+        await ctx.send(f'File has been downloaded')
+    except:
+        await ctx.send("Please provide a url")
+    
+@bot.command()    
+async def deleteDownloadedFile(ctx):
+    try:
+        os.remove(f'{ctx.author.id}')
+        await ctx.send(f'Deleted file {ctx.author.id}')
+    except:
+        await ctx.send("File not found")
 
-@bot.command()
-async def disassemble(ctx, file, arch, codeType, funcName): #funcName optional lol
-    if file is None:
-        await bot.wait_for('attachement', check=check(ctx.author), timeout=30)
-    elif file != None:
-        for atch in ctx.message.attachements:
-            await atch[0].save(f"{wd}/files/{atch.filename}")
-
-@bot.command()
-async def fileDownloadURL(ctx, url):
-    r = requests.get(url, allow_redirects=True)
-    open(f"{ctx.author.id}", 'wb').write(r.content)
-
-bot.run(botToken)
+bot.run(token)
+#TODO: Implement these commands as the new discord slash commands
