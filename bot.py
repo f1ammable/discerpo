@@ -15,7 +15,8 @@ from botToken import token # Not stealing my token
 if os.path.isdir('files'):
     os.chdir('files')
 else:
-    os.mkdir('files') and os.chdir('files')
+    os.mkdir('files') 
+    os.chdir('files')
 
 # Set up bot
 
