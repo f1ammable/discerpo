@@ -21,3 +21,5 @@ def disassemblePE(filePath):
 def dissasembleELF(filePath):
     #do cool stuff 
     return 0
+
+disassemblePE('C:\\Users\\coral\\Desktop\\a')
