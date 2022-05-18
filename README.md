@@ -1,4 +1,4 @@
-# disasmBot
+# discerpo
 
 A discord bot which dissasembles files
 
