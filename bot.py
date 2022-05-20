@@ -3,7 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 import os
 import typing
-#import requests - replace with aiohttp to asynchronously download files
 
 # Own custom module imports
 #import disasm
@@ -22,7 +21,7 @@ else:
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(intents=intents, command_prefix='!')
+bot = commands.Bot(intents=intents, command_prefix='!', owner_id=865159891491618836)
 
 @bot.event
 async def on_ready():
@@ -39,7 +38,7 @@ async def disassembleFile(ctx: commands.context, arch: str, bitmode: int, file: 
 
 @bot.hybrid_command(name="disasm_url", description="Dissasembles file provided from URL", usage="disasm <architecture>, <bitmode {32,64}>, <file url>, <function  {Optional}>")
 @app_commands.guilds(discord.Object(id=964964494772166756))
-async def dissasembleURL(ctx: commands.context, arch: str, bitmode: int, file: str, func: typing.Optional[str]):
+async def disassembleURL(ctx: commands.context, arch: str, bitmode: int, file: str, func: typing.Optional[str]):
     if not file:
         await ctx.send("Please provide file url")
 
@@ -52,4 +51,10 @@ async def deleteFile(ctx : commands.context):
     except:
         await ctx.send("File does not exist")
 
+@bot.command()
+@commands.is_owner()
+async def timer(ctx: commands.context):
+    pass # make a performance counter and sync command usable by owner only
+        # remove jishaku after this is done
+        
 bot.run(token)

@@ -1,9 +1,28 @@
 import pefile
 from capstone import *
 
-def checkMagic(file):
-    pass
-
+def checkMagic(file): # maybe async this, possibly slow
+    with open(file, 'rb') as f:
+        while(byte := f.read()[:4].hex()):
+            magic = ''
+            magic += byte.upper()
+            match magic:
+                case '4D5A9000':
+                    disassemblePE(file)
+                case '7F454C46':
+                    disassembleELF(file)
+                case 'CAFEBABE': # Might remove this since Java class files also have this magic
+                    disassembleMacho(file) # I don't like Mach-O :(
+                case 'FEEDFACE':
+                    disassembleMacho(file)
+                case 'FEEDFACF':
+                    disassembleMacho(file)
+                case 'CEFAEDFE':
+                    disassembleMacho(file)
+                case 'CFFAEDFE':
+                    disassembleMacho(file)
+                case _:
+                    return 'Invalid'
 
 def disassemblePE(filePath):
     pe = pefile.PE(filePath)
@@ -18,8 +37,10 @@ def disassemblePE(filePath):
     for i in md.disasm(codeDump, codeAddr):
         print("0x%x: \t%s\t%s" %(i.address, i.mnemonic, i.op_str))
 
-def dissasembleELF(filePath):
-    #do cool stuff 
-    return 0
+def disassembleELF(filePath):
+    pass
 
-disassemblePE('C:\\Users\\coral\\Desktop\\a')
+def disassembleMacho(filePath):
+    pass
+
+print(checkMagic("files\pe"))
