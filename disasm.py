@@ -1,30 +1,23 @@
 import pefile
 from capstone import *
+import os
+import discord
+from pathlib import Path
 
-def checkMagic(file): # maybe async this, possibly slow
+async def processFile(file, arch, bitmode): # maybe async this, possibly slow
     with open(file, 'rb') as f:
         while(byte := f.read()[:4].hex()):
             magic = ''
             magic += byte.upper()
             match magic:
-                case '4D5A9000':
-                    disassemblePE(file)
-                case '7F454C46':
-                    disassembleELF(file)
-                case 'CAFEBABE': # Might remove this since Java class files also have this magic
-                    disassembleMacho(file) # I don't like Mach-O :(
-                case 'FEEDFACE':
-                    disassembleMacho(file)
-                case 'FEEDFACF':
-                    disassembleMacho(file)
-                case 'CEFAEDFE':
-                    disassembleMacho(file)
-                case 'CFFAEDFE':
-                    disassembleMacho(file)
-                case _:
-                    return 'Invalid'
+                case '4D5A9000': return await disassemblePE(file, arch, bitmode)
+                case '7F454C46': return await disassembleELF(file)
+                case 'CAFEBABE', 'FEEDFACE', 'FEEDFACF', 'CEFAEDFE', 'CFFAEDFE':return await disassembleMacho(file)
+                case _: return "Invalid file"
 
-def disassemblePE(filePath):
+async def disassemblePE(filePath, arch, bitmode):
+    fileDir, fileName = os.path.split(filePath)
+    print(fileDir)
     pe = pefile.PE(filePath)
 
     eop = pe.OPTIONAL_HEADER.AddressOfEntryPoint
@@ -34,13 +27,16 @@ def disassemblePE(filePath):
 
     md = Cs(CS_ARCH_X86, CS_MODE_64)
 
+    dump = ""
+
     for i in md.disasm(codeDump, codeAddr):
-        print("0x%x: \t%s\t%s" %(i.address, i.mnemonic, i.op_str))
+        dump += "0x%x: \t%s\t%s \n" %(i.address, i.mnemonic, i.op_str)
+    
+    return discord.File(Path(f'{fileName}.txt').absolute())
 
-def disassembleELF(filePath):
+
+async def disassembleELF(filePath):
     pass
 
-def disassembleMacho(filePath):
+async def disassembleMacho(filePath):
     pass
-
-print(checkMagic("files\pe"))
