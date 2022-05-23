@@ -14,10 +14,10 @@ async def processFile(file, arch, bitmode): # maybe async this, possibly slow
                 case '7F454C46': return await disassembleELF(file)
                 case 'CAFEBABE', 'FEEDFACE', 'FEEDFACF', 'CEFAEDFE', 'CFFAEDFE':return await disassembleMacho(file)
                 case _: return "Invalid file"
+        f.close()
 
 async def disassemblePE(filePath, arch, bitmode):
-    fileDir, fileName = os.path.split(filePath)
-    print(fileDir)
+    fileDir, fileDump = os.path.split(filePath)
     pe = pefile.PE(filePath)
 
     eop = pe.OPTIONAL_HEADER.AddressOfEntryPoint
@@ -25,14 +25,16 @@ async def disassemblePE(filePath, arch, bitmode):
     codeDump = codeSection.get_data()
     codeAddr = pe.OPTIONAL_HEADER.ImageBase + codeSection.VirtualAddress
 
-    md = Cs(CS_ARCH_X86, CS_MODE_64)
-
     dump = ""
 
-    for i in md.disasm(codeDump, codeAddr):
+    for i in Cs(CS_ARCH_X86, CS_MODE_64).disasm(codeDump, codeAddr):
         dump += "0x%x: \t%s\t%s \n" %(i.address, i.mnemonic, i.op_str)
     
-    return discord.File(Path(f'{fileName}.txt').absolute())
+    with open(f'{fileDump}.txt', 'w') as f:
+        f.write(dump)
+        f.close()
+
+    return discord.File(Path(f'{fileDump}.txt').absolute())
 
 
 async def disassembleELF(filePath):

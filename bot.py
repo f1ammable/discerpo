@@ -6,6 +6,7 @@ import typing
 import aiohttp
 import aiofiles
 from pathlib import Path
+import glob
 
 # Own custom module imports
 #import disasm
@@ -60,7 +61,8 @@ async def disassembleURL(ctx: commands.context, arch: str, bitmode: int, file: s
 @app_commands.guilds(discord.Object(id=964964494772166756))
 async def deleteFile(ctx : commands.context):
     try:
-        os.remove(ctx.author.id)
+        for file in glob.glob(f'{ctx.author.id}*'):
+            os.remove(file)
         await ctx.send("File deleted")
     except:
         await ctx.send("File does not exist")
