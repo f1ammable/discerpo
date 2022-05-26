@@ -53,7 +53,7 @@ async def disassembleFile(ctx: commands.context, arch: str, bitmode: str, file: 
 
 @bot.hybrid_command(name="disasm_url", description="Disassembles file provided from URL", usage="disasm <architecture>, <bitmode {32,64}>, <file url>, <function  {Optional}>")
 @app_commands.guilds(discord.Object(id=964964494772166756))
-async def disassembleURL(ctx: commands.context, arch: str, bitmode: int, file: str, func: typing.Optional[str]):
+async def disassembleURL(ctx: commands.context, arch: str, bitmode: str, file: str, func: typing.Optional[str]):
     if not file:
         await ctx.send("Please provide file url")
 

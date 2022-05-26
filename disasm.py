@@ -5,6 +5,18 @@ import discord
 from pathlib import Path
 
 async def processFile(file, arch, bitmode): # maybe async this, possibly slow
+    match arch.lower():
+        case "x86": arch = CS_ARCH_X86
+        case "arm": arch = CS_ARCH_ARM
+        case "arm64": arch = CS_ARCH_ARM64
+        case _: return "Invalid architecture"
+    match bitmode.lower():
+        case "16": bitmode = CS_MODE_16
+        case "32": bitmode = CS_MODE_32
+        case "64": bitmode = CS_MODE_64
+        case "l_endian": bitmode = CS_MODE_LITTLE_ENDIAN
+        case "b_endian": bitmode = CS_MODE_BIG_ENDIAN
+        case "arm": bitmode = CS_MODE_ARM
     with open(file, 'rb') as f:
         while(byte := f.read()[:4].hex()):
             magic = ''
@@ -27,7 +39,7 @@ async def disassemblePE(filePath, arch, bitmode):
 
     dump = ""
 
-    for i in Cs(CS_ARCH_X86, CS_MODE_64).disasm(codeDump, codeAddr):
+    for i in Cs(arch, bitmode).disasm(codeDump, codeAddr):
         dump += "0x%x: \t%s\t%s \n" %(i.address, i.mnemonic, i.op_str)
     
     with open(f'{fileDump}.txt', 'w') as f:
