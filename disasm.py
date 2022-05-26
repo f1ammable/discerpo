@@ -17,6 +17,7 @@ async def processFile(file, arch, bitmode): # maybe async this, possibly slow
         case "l_endian": bitmode = CS_MODE_LITTLE_ENDIAN
         case "b_endian": bitmode = CS_MODE_BIG_ENDIAN
         case "arm": bitmode = CS_MODE_ARM
+        case _: return "Invalid disasm mode"
     with open(file, 'rb') as f:
         while(byte := f.read()[:4].hex()):
             magic = ''
