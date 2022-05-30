@@ -5,12 +5,14 @@
 </div>
 
 ## Features
-- Displaying dissasembled contents of a file
+- Displaying dissasembled contents of a file (currently only PE files are "supported", support planed for ELF and possibly Mach-O)
 - Accept files as URL and attachement
 - Usage via slash commands and old-style commands
 
 ## Todo list
 - Display imports, exports and such
+- Add support for ELF and Mach-O
+- Add timing and sync commands
 - Display Entropy and generate an image based off of it
 - ~~Potentially accept attachements not only URL~~ (Done)
 
