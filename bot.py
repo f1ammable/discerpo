@@ -48,7 +48,7 @@ async def on_ready():
 
 #Bot commands which can be accessed by users
 
-@bot.tree.command(name="disasm", description="Disassembles attachement provided", guild=discord.Object(id=964964494772166756))
+@bot.tree.command(name="disasm", description="Disassembles attachement provided", guild=discord.Object(id=964964494772166756)) # Currently only syncing to my personal server for testing as to not wait up to 24 hours for a command sync 
 async def disassembleFile(ctx: commands.context, arch: str, bitmode: str, file: discord.Attachment, func: typing.Optional[str]):
     if not file:
         await ctx.send("File attachement missing")
