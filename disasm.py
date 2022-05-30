@@ -4,7 +4,7 @@ import os
 import discord
 from pathlib import Path
 
-async def processFile(file, arch, bitmode): # maybe async this, possibly slow
+async def processFile(file, arch, bitmode):
     match arch.lower():
         case "x86": arch = CS_ARCH_X86
         case "arm": arch = CS_ARCH_ARM
@@ -38,14 +38,25 @@ async def disassemblePE(filePath, arch, bitmode):
     codeDump = codeSection.get_data()
     codeAddr = pe.OPTIONAL_HEADER.ImageBase + codeSection.VirtualAddress
 
-    dump = ""
+    asmDump = ""
 
     for i in Cs(arch, bitmode).disasm(codeDump, codeAddr):
-        dump += "0x%x: \t%s\t%s \n" %(i.address, i.mnemonic, i.op_str)
+        asmDump += "0x%x: \t%s\t%s \n" %(i.address, i.mnemonic, i.op_str)
     
     with open(f'{fileDump}.txt', 'w') as f:
-        f.write(dump)
+        f.write(asmDump)
         f.close()
+    
+    # Remove all nop instructions within the output as this is just adding extra space which is uneeded - currently incomplete
+    # After this is done, the output should be paginated and then the PE disassembly process is finished
+    #
+    # with open(f'{fileDump}.txt', 'r+') as f: 
+    #     lines = f.readlines()
+    #     for l in range(0, lines):
+    #         if "nop" in lines[l]:
+    #             lines[l] = ""
+    #             f.writelines(lines)
+    #     f.close()
 
     return discord.File(Path(f'{fileDump}.txt').absolute())
 

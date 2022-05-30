@@ -9,7 +9,6 @@ from pathlib import Path
 import glob
 
 # Own custom module imports
-#import disasm
 from botToken import token # Not stealing my token
 import disasm
 
@@ -26,9 +25,15 @@ else:
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(intents=intents, command_prefix='!', owner_id=865159891491618836)
+bot.session = None
+
+async def getSession(bot): # Don't create new aiohttp.Clientsession() everytime
+    if bot.session is None:
+        bot.session = aiohttp.ClientSession()
+    return bot.session
 
 async def download(url, filename): # Downloading files 
-    async with aiohttp.ClientSession() as s: # Use bot.session in the future
+    async with getSession(bot) as s:
         async with s.get(url) as r:
             if r.status == 200:
                 f = await aiofiles.open(f'{filename}', mode='wb')
@@ -43,13 +48,12 @@ async def on_ready():
 
 #Bot commands which can be accessed by users
 
-@bot.hybrid_command(name="disasm", description="Disassembles attachement provided", usage="disasm <architecture>, <bit mode {32, 64}>, <file>, <function  {Optional}>")
-@app_commands.guilds(discord.Object(id=964964494772166756)) # Currently only for custom guild to not deal with waiting for sync
+@bot.tree.command(name="disasm", description="Disassembles attachement provided", guild=discord.Object(id=964964494772166756))
 async def disassembleFile(ctx: commands.context, arch: str, bitmode: str, file: discord.Attachment, func: typing.Optional[str]):
     if not file:
         await ctx.send("File attachement missing")
     newFile = await download(ctx.message.attachments[0].url, str(ctx.author.id))
-    await ctx.send(file = await disasm.processFile(newFile, "lol", "lol"), content="Here's your disassembled file")
+    await ctx.send(file = await disasm.processFile(newFile, arch, bitmode), content="Here's your disassembled file")
 
 @bot.hybrid_command(name="disasm_url", description="Disassembles file provided from URL", usage="disasm <architecture>, <bitmode {32,64}>, <file url>, <function  {Optional}>")
 @app_commands.guilds(discord.Object(id=964964494772166756))
@@ -72,5 +76,10 @@ async def deleteFile(ctx : commands.context):
 async def timer(ctx: commands.context):
     pass # make a performance counter and sync command usable by owner only
         # remove jishaku after this is done
+
+@bot.command()
+@commands.is_owner() # trying to make a sync command
+async def guild_cmdSync(ctx: commands.context, guildSync: int):
+    await bot.tree.sync(guild=guildSync)
         
 bot.run(token)
