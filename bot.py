@@ -33,16 +33,15 @@ async def getSession(bot): # Don't create new aiohttp.Clientsession() everytime
     return bot.session
 
 async def download(url, filename): # Downloading files
-    if url[-4:] == ".exe": # basic URL checking
-        async with await getSession(bot) as s: 
-            async with s.get(url) as r:
-                if r.status == 200:
-                    f = await aiofiles.open(f'{filename}', mode='wb')
-                    await f.write(await r.read())
-                    await f.close()
-        return Path(str(filename)).absolute()
-    else:
-        return "Invalid url provided, please check your url and try again"  
+    async with await getSession(bot) as s: 
+        async with s.get(url) as r:
+            if r.status == 200:
+                f = await aiofiles.open(f'{filename}', mode='wb')
+                await f.write(await r.read())
+                await f.close()
+            else:
+                return "Invalid url provided"
+    return Path(str(filename)).absolute()
 
 @bot.event
 async def on_ready():
