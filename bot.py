@@ -24,7 +24,7 @@ else:
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(intents=intents, command_prefix='!', owner_id=865159891491618836)
+bot = commands.Bot(intents=intents, command_prefix='!')
 bot.session = None
 
 async def getSession(bot): # Don't create new aiohttp.Clientsession() everytime
@@ -33,7 +33,7 @@ async def getSession(bot): # Don't create new aiohttp.Clientsession() everytime
     return bot.session
 
 async def download(url, filename): # Downloading files 
-    async with getSession(bot) as s:
+    async with await getSession(bot) as s: 
         async with s.get(url) as r:
             if r.status == 200:
                 f = await aiofiles.open(f'{filename}', mode='wb')
@@ -48,18 +48,20 @@ async def on_ready():
 
 #Bot commands which can be accessed by users
 
-@bot.tree.command(name="disasm", description="Disassembles attachement provided", guild=discord.Object(id=964964494772166756)) # Currently only syncing to my personal server for testing as to not wait up to 24 hours for a command sync 
-async def disassembleFile(ctx: commands.context, arch: str, bitmode: str, file: discord.Attachment, func: typing.Optional[str]):
-    if not file:
-        await ctx.send("File attachement missing")
-    newFile = await download(ctx.message.attachments[0].url, str(ctx.author.id))
-    await ctx.send(file = await disasm.processFile(newFile, arch, bitmode), content="Here's your disassembled file")
-
-@bot.hybrid_command(name="disasm_url", description="Disassembles file provided from URL", usage="disasm <architecture>, <bitmode {32,64}>, <file url>, <function  {Optional}>")
-@app_commands.guilds(discord.Object(id=964964494772166756))
-async def disassembleURL(ctx: commands.context, arch: str, bitmode: str, file: str, func: typing.Optional[str]):
-    if not file:
-        await ctx.send("Please provide file url")
+@bot.hybrid_command(name="disasm", description="Disassembles attachement or URL provided")
+@app_commands.guilds(discord.Object(id=964964494772166756)) # Currently only syncing to my personal server for testing as to not wait up to 24 hours for a command sync 
+async def disassembleFile(ctx: commands.context, arch: str, bitmode: str, attachment: typing.Optional[discord.Attachment], url: typing.Optional[str]): # typing.Union doesn't seem to work for this unfortunately
+    if isinstance(attachment, discord.Attachment):
+        downloadedFile = await download(ctx.message.attachments[0].url, str(ctx.author.id))
+        await ctx.send(file = await disasm.processFile(downloadedFile, arch, bitmode), content = "Here's your disassembled file")
+    elif isinstance(url, str):
+        try:
+            downloadedFile = await download(url, str(ctx.author.id))
+            await ctx.send(file = await disasm.processFile(downloadedFile, arch, bitmode), content="Here's your disassembled file")
+        except:
+            await ctx.send("Most likely URL is invalid")
+    else:
+        await ctx.send("Please provide a file url or attachement")
 
 @bot.hybrid_command(name="rm_file", description="Deletes stored binary")
 @app_commands.guilds(discord.Object(id=964964494772166756))
@@ -78,8 +80,11 @@ async def timer(ctx: commands.context):
         # remove jishaku after this is done
 
 @bot.command()
-@commands.is_owner() # trying to make a sync command
-async def guild_cmdSync(ctx: commands.context, guildSync: int):
-    await bot.tree.sync(guild=guildSync)
-        
+@commands.is_owner() # trying to make a sync command - currently guild only
+async def commandSync(ctx: commands.context):
+    try:
+        await bot.tree.sync(discord.Object(id=964964494772166756))
+        await ctx.send("Commands synced")
+    except:
+        await ctx.send("Something went wrong")
 bot.run(token)
