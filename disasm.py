@@ -5,7 +5,7 @@ import discord
 from pathlib import Path
 
 async def processFile(file, arch, bitmode):
-    match arch.lower():
+    match arch.lower(): # move this to bot.py as to properly return error
         case "x86": arch = CS_ARCH_X86
         case "arm": arch = CS_ARCH_ARM
         case "arm64": arch = CS_ARCH_ARM64
