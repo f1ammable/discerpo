@@ -4,37 +4,33 @@ import os
 import discord
 from pathlib import Path
 
-async def processFile(file, arch, bitmode):
-    match arch.lower(): # move this to bot.py as to properly return error
-        case "x86": arch = CS_ARCH_X86
-        case "arm": arch = CS_ARCH_ARM
-        case "arm64": arch = CS_ARCH_ARM64
-        case _: return "Invalid architecture"
-    match bitmode.lower():
-        case "16": bitmode = CS_MODE_16
-        case "32": bitmode = CS_MODE_32
-        case "64": bitmode = CS_MODE_64
-        case "l_endian": bitmode = CS_MODE_LITTLE_ENDIAN
-        case "b_endian": bitmode = CS_MODE_BIG_ENDIAN
-        case "arm": bitmode = CS_MODE_ARM
-        case _: return "Invalid disasm mode"
+# Custom errors
+import errors
+
+async def processFile(file):
     with open(file, 'rb') as f:
         while(byte := f.read()[:4].hex()):
             magic = ''
             magic += byte.upper()
             match magic:
-                case '4D5A9000': return await disassemblePE(file, arch, bitmode)
+                case '4D5A9000': return await disassemblePE(file)
                 case '7F454C46': return await disassembleELF(file)
                 case 'CAFEBABE', 'FEEDFACE', 'FEEDFACF', 'CEFAEDFE', 'CFFAEDFE':return await disassembleMacho(file)
-                case _: return "Invalid file"
+                case _: raise errors.InvalidMagic(magic)
         f.close()
 
-async def disassemblePE(filePath, arch, bitmode):
+async def disassemblePE(filePath):
     fileDir, fileDump = os.path.split(filePath)
     pe = pefile.PE(filePath)
 
-    eop = pe.OPTIONAL_HEADER.AddressOfEntryPoint
-    codeSection = pe.get_section_by_rva(eop)
+    match hex(pe.FILE_HEADER.Machine):
+        case '0x8664': arch, bitmode = CS_ARCH_X86, CS_MODE_64
+        case '0x1c0': arch, bitmode = CS_ARCH_ARM, CS_MODE_LITTLE_ENDIAN
+        case '0xaa64': arch, bitmode = CS_ARCH_ARM64, CS_MODE_LITTLE_ENDIAN
+        case '0x14c': arch, bitmode =  CS_ARCH_X86, CS_MODE_32
+        case _: raise errors.InvalidMachinePE(pe.FILE_HEADER.Machine)
+
+    codeSection = pe.get_section_by_rva(pe.OPTIONAL_HEADER.AddressOfEntryPoint)
     codeDump = codeSection.get_data()
     codeAddr = pe.OPTIONAL_HEADER.ImageBase + codeSection.VirtualAddress
 
@@ -62,7 +58,7 @@ async def disassemblePE(filePath, arch, bitmode):
 
 
 async def disassembleELF(filePath):
-    pass
+    return 'Sorry, ELF disassembly is currently not available'
 
 async def disassembleMacho(filePath):
-    pass
+    return 'Sorry, Mach-O disassembly is currently not available'
