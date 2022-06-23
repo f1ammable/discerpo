@@ -1,1 +1,1 @@
-from errors.machine import InvalidMachinePE, InvalidMagic
+from .machine import *

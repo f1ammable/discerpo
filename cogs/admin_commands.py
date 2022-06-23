@@ -35,5 +35,6 @@ class Admin_Commands(commands.Cog):
         else:
             await interaction.response.send_message(f'reloaded `cogs.{module}`')
 
+
 async def setup(bot):
     await bot.add_cog(Admin_Commands(bot))
