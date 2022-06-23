@@ -201,12 +201,6 @@ pip-selfcheck.json
 # Ignore code-workspaces
 *.code-workspace
 
-#venv
-bot-env/*
-
-#Bot token
-botToken.py
-
 #Some osx shit
 .DS_Store
 files/*

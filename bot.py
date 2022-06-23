@@ -2,8 +2,8 @@ import discord
 from discord.ext import commands
 import os
 
-# Own custom module imports
-from botToken import token # Not stealing my token
+# Easier to manage a token across different machines
+token = os.getenv('DISCORD')
 
 # Create the files directory which the binaries will be stored in
 
