@@ -4,6 +4,7 @@ from discord.ext import commands
 import typing
 
 import backend
+import errors
 
 
 class Disasm_command(commands.Cog):
@@ -16,25 +17,18 @@ class Disasm_command(commands.Cog):
     async def disassembleFile(self, interaction: discord.Interaction, attachment: typing.Optional[discord.Attachment], url: typing.Optional[str]):  # typing.Union doesn't seem to work for this unfortunately
         if isinstance(attachment, discord.Attachment):
             downloadedFile = await backend.download(interaction.namespace.attachment.url, str(interaction.user.id), self.bot)
-            disassembled_file = await backend.processFile(downloadedFile)
+            disassembled_file = await backend.processFile(downloadedFile)  
+            await interaction.response.send_message(file=disassembled_file, content="Here's your disassembled file")
 
-            if isinstance(disassembled_file, discord.File):  # Another isinstance check if processFile returns an exception due to an incompatible file
-                await interaction.response.send_message(file=disassembled_file, content="Here's your disassembled file")
-            else:
-                await interaction.response.send_message(disassembled_file)
         elif isinstance(url, str):
-            try:
                 downloadedFile = await backend.download(url, str(interaction.user.id), self.bot)
                 disassembled_file = await backend.processFile(downloadedFile)
+                await interaction.response.send_message(file=disassembled_file, content="Here's your disassembled file")
 
-                if isinstance(disassembled_file, discord.File):
-                    await interaction.response.send_message(file=disassembled_file, content="Here's your disassembled file")
-                else:
-                    await interaction.response.send_message(disassembled_file)
-            except Exception as e:
-                await interaction.response.send_message(f'{type(e).__name__}: {e}')
-        else:
-            await interaction.response.send_message("Please provide a file url or attachment")
+    @disassembleFile.error
+    async def disasm_err(self, interaction: discord.Interaction, error):
+        if isinstance(error, errors.InvalidMagic): # Does not actually send the message
+            await interaction.response.send_message("Invalid magic bytes in file provided. Please try again")
 
 
 async def setup(bot):

@@ -1,35 +1,26 @@
-
+from . import logger
 
 __all__ = (
     "InvalidMachinePE",
     "InvalidMagic",
 )
-
-
-class WarnColours:
-    ERR = '\033[93m'
-    RESET = '\033[0m'
-
-# The above is not windows compatible (specifically cmd)
-# While I doubt that a lot of people will care or try to host this on windows
-# I'll try and find a fix for this
-
-
 class InvalidMachinePE(Exception):
-    def __init__(self, header, message='does not match valid machine types'):
+    def __init__(self, header):
         self.header = header
-        self.message = message
-        super().__init__(self.message)
+        super().__init__()
 
     def __str__(self):
-        return f'Identified machine type from PE header -> {WarnColours.ERR + self.header} {WarnColours.RESET + self.message}'
+        logger.error(f'Machine type from PE header {self.header} does not match valid machine types')
+        return "Machine type not supported"
 
 
 class InvalidMagic(Exception):
-    def __init__(self, magic, message='does not match a valid executable file'):
+    def __init__(self, magic):
         self.magic = magic
-        self.message = message
-        super().__init__(self.message)
+        super().__init__()
 
     def __str__(self):
-        return f'Identified magic bytes from file header -> {WarnColours.ERR + self.magic} {WarnColours.RESET + self.message}'
+        logger.error(f'Magic bytes {self.magic} does not match valid magic bytes')
+        return "Invalid Magic bytes"
+
+# Both of these errors only log to the logger as of now
