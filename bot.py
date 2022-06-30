@@ -4,7 +4,7 @@ import os
 import errors
 
 # Easier to manage a token across different machines
-token = os.getenv('DISCORD')
+token = os.getenv('DISCORD_DEV')
 
 # Create the files directory which the binaries will be stored in
 

@@ -10,8 +10,7 @@ class InvalidMachinePE(Exception):
         super().__init__()
 
     def __str__(self):
-        logger.error(f'Machine type from PE header {self.header} does not match valid machine types')
-        return "Machine type not supported"
+        return f'Machine type from PE header ```{self.header}``` does not match valid machine types'
 
 
 class InvalidMagic(Exception):
@@ -20,7 +19,4 @@ class InvalidMagic(Exception):
         super().__init__()
 
     def __str__(self):
-        logger.error(f'Magic bytes {self.magic} does not match valid magic bytes')
-        return "Invalid Magic bytes"
-
-# Both of these errors only log to the logger as of now
+        return f'Magic bytes ```{self.magic}``` does not match valid magic bytes'

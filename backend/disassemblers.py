@@ -21,7 +21,7 @@ async def processFile(file):
         while byte := f.read()[:4].hex():
             magic = ''
             magic += byte.upper()
-            match magic:
+            match magic: # Detect executable type
                 case '4D5A9000': return await disassemblePE(file)
                 case '7F454C46': return await disassembleELF(file)
                 case 'CAFEBABE', 'FEEDFACE', 'FEEDFACF', 'CEFAEDFE', 'CFFAEDFE': return await disassembleMacho(file)
@@ -33,7 +33,7 @@ async def disassemblePE(filePath):
     fileDir, fileDump = os.path.split(filePath)
     pe = pefile.PE(filePath)
 
-    match hex(pe.FILE_HEADER.Machine):
+    match hex(pe.FILE_HEADER.Machine): # Reading architecture from header
         case '0x8664': arch, bitmode = CS_ARCH_X86, CS_MODE_64
         case '0x1c0': arch, bitmode = CS_ARCH_ARM, CS_MODE_LITTLE_ENDIAN
         case '0xaa64': arch, bitmode = CS_ARCH_ARM64, CS_MODE_LITTLE_ENDIAN
@@ -47,22 +47,19 @@ async def disassemblePE(filePath):
     asmDump = ""
 
     for i in Cs(arch, bitmode).disasm(codeDump, codeAddr):
-        asmDump += "0x%x: \t%s\t%s \n" % (i.address, i.mnemonic, i.op_str)
+        asmDump += "0x%x: \t%s\t%s \n" % (i.address, i.mnemonic, i.op_str) # Actual disassembly contents
 
-    with open(f'{fileDump}.txt', 'w') as f:
-        f.write(asmDump)
+    with open(f'{fileDump}.txt', 'w+') as f:
+        f.truncate(0) # Using w+ so we can modify the file in 1 open, therefore we need to clear the file contents first
+        f.write(asmDump) 
+        f.seek(0) 
+        for l in f.readlines(): # Deletes all nops as they take up too much space
+            if "nop" not in l:
+                f.write(l) 
+        f.truncate() # Overwrite the file instead of adding to it
         f.close()
 
-    # Remove all nop instructions within the output as this is just adding extra space which is uneeded - currently incomplete
-    # After this is done, the output should be paginated and then the PE disassembly process is finished
-    #
-    # with open(f'{fileDump}.txt', 'r+') as f:
-    #     lines = f.readlines()
-    #     for l in range(0, lines):
-    #         if "nop" in lines[l]:
-    #             lines[l] = ""
-    #             f.writelines(lines)
-    #     f.close()
+        # On a further note, this should be replaced by an algorithm that checks if 2 instructions are the same, deleting more than 1 occurence
 
     return discord.File(Path(f'{fileDump}.txt').absolute())
 
