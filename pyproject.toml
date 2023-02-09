@@ -11,7 +11,7 @@ capstone = "^5.0.0"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py.git"}
 pefile = "^2022.5.30"
 jishaku = "^2.5.1"
-aiofiles = "^0.8.0"
+aiofiles = "^23.1.0"
 requests = "^2.28.1"
 
 [tool.poetry.dev-dependencies]
